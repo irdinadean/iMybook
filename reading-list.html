@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>iMybook - My Reading Space</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="logo">iMy<span>book.</span></div>
+            <div class="nav-links">
+                <a href="index.html">Discover</a>
+                <a href="reading-list.html" class="active">My Reading List</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="page-header container">
+        <div class="eyebrow">YOUR PERSONAL COLLECTION</div>
+        <h1>My Reading Space</h1>
+        <p>Keep your books organised and your reading journey alive.</p>
+    </header>
+
+    <main class="container">
+        <section class="section">
+            <div class="section-heading">
+                <h2>Add a Book</h2>
+                <p>Add a book to your personal collection.</p>
+            </div>
+            <div class="card">
+                <form id="bookForm">
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label for="bookTitle">Book Title</label>
+                            <input type="text" id="bookTitle" placeholder="Enter book title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookAuthor">Author</label>
+                            <input type="text" id="bookAuthor" placeholder="Enter author name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookStatus">Reading Status</label>
+                        <select id="bookStatus">
+                            <option value="Want to Read">Want to Read</option>
+                            <option value="Reading">Reading</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="primary-button">Add Book</button>
+                </form>
+                <p id="message" class="message"></p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <h2>Saved Books</h2>
+                <p>Your personal collection in one place.</p>
+            </div>
+            <div class="card">
+                <div id="bookList"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <h2>Reading Progress</h2>
+                <p>Calculate how much of a book you have completed.</p>
+            </div>
+            <div class="card">
+                <div class="two-column">
+                    <div class="form-group">
+                        <label for="pagesRead">Pages Read</label>
+                        <input type="number" id="pagesRead" min="0" placeholder="e.g. 120">
+                    </div>
+                    <div class="form-group">
+                        <label for="totalPages">Total Pages</label>
+                        <input type="number" id="totalPages" min="1" placeholder="e.g. 300">
+                    </div>
+                </div>
+                <button id="calculateButton" class="primary-button">Calculate Progress</button>
+                <div id="progressResult" class="progress-result" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <div class="eyebrow">A SPACE FOR YOUR THOUGHTS</div>
+                <h2>Personal Reading Journal</h2>
+                <p>Save your favourite quotes and thoughts from every book.</p>
+            </div>
+            <div class="card">
+                <form id="journalForm">
+                    <div class="form-group">
+                        <label for="journalBook">Select a Book</label>
+                        <select id="journalBook" required>
+                            <option value="">Choose a saved book</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="journalQuote">Favourite Quote</label>
+                        <textarea id="journalQuote" placeholder="Write a quote you want to remember..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="journalThoughts">My Thoughts</label>
+                        <textarea id="journalThoughts" placeholder="Write your thoughts or a short review..." required></textarea>
+                    </div>
+                    <button type="submit" class="primary-button" id="journalSaveButton">Save Journal Entry</button>
+                    <button type="button" class="secondary-button" id="cancelJournalButton" style="display:none;">Cancel Edit</button>
+                </form>
+                <p id="journalMessage" class="message"></p>
+            </div>
+
+            <div style="margin-top: 28px;">
+                <div class="section-heading">
+                    <h2>My Journal Entries</h2>
+                    <p>Your saved reading memories.</p>
+                </div>
+                <div id="journalList"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>iMybook © 2026 | Every page holds a memory.</p>
+    </footer>
+
+    <script src="storage.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>

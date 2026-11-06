@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>iMybook - Discover Books</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="logo">iMy<span>book.</span></div>
+
+            <div class="nav-links">
+                <a href="index.html" class="active">Discover</a>
+                <a href="reading-list.html" class="nav-button">My Reading List</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <div class="hero-decoration"></div>
+
+            <div class="hero-content">
+                <div class="eyebrow">YOUR PERSONAL BOOK SPACE</div>
+
+                <h1>Every book has a story.<br>
+                    <span>Find yours.</span>
+                </h1>
+
+                <p>
+                    Discover new books, explore different genres,
+                    and build a reading collection that belongs to you.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="section">
+            <div class="section-heading">
+                <h2>Discover Books</h2>
+                <p>Search for your next favourite read.</p>
+            </div>
+
+            <div class="card">
+                <div class="search-row">
+                    <input type="text" id="bookSearch"
+                        placeholder="Enter a book title...">
+
+                    <button class="primary-button" id="searchButton">
+                        Search Books
+                    </button>
+                </div>
+
+                <p id="message" class="message"></p>
+                <div id="searchResults" class="results-grid"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <h2>Find Your Next Read</h2>
+                <p>Explore book suggestions based on your favourite genre.</p>
+            </div>
+
+            <div class="card">
+                <div class="recommendation-box">
+                    <div>
+                        <label for="genre">Choose a genre</label>
+
+                        <select id="genre">
+                            <option value="">Select a genre</option>
+                            <option value="Fantasy">Fantasy</option>
+                            <option value="Romance">Romance</option>
+                            <option value="Mystery">Mystery</option>
+                            <option value="Horror">Horror</option>
+                            <option value="Science">Science</option>
+                        </select>
+                    </div>
+
+                    <button class="primary-button" id="recommendButton">
+                        Get Recommendations
+                    </button>
+                </div>
+
+                <p id="recommendationMessage" class="message"></p>
+                <div id="recommendationResults"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>iMybook © 2026 | A little space for every story.</p>
+    </footer>
+
+    <script src="storage.js"></script>
+    <script>
+        const searchButton = document.getElementById('searchButton');
+
+        searchButton.addEventListener('click', searchBooks);
+
+        document.getElementById('bookSearch').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                searchBooks();
+            }
+        });
+
+        async function searchBooks() {
+            const searchText = document.getElementById('bookSearch').value.trim();
+            const searchResults = document.getElementById('searchResults');
+            const message = document.getElementById('message');
+
+            searchResults.innerHTML = '';
+
+            if (searchText === '') {
+                message.textContent = 'Please enter a book title.';
+                return;
+            }
+
+            message.textContent = 'Searching for books...';
+
+            try {
+                const response = await fetch(
+                    'https://openlibrary.org/search.json?title=' +
+                    encodeURIComponent(searchText) + '&limit=10'
+                );
+
+                const data = await response.json();
+
+                searchResults.innerHTML = '';
+
+                if (data.docs.length === 0) {
+                    message.textContent = 'No books found. Try another title.';
+                    return;
+                }
+
+                message.textContent = 'Search results:';
+
+                for (let i = 0; i < data.docs.length; i++) {
+                    const book = data.docs[i];
+
+                    const title = book.title || 'Unknown Title';
+                    const author = book.author_name
+                        ? book.author_name[0]
+                        : 'Unknown Author';
+
+                    const year = book.first_publish_year || 'Not available';
+
+                    let coverUrl = '';
+
+                    if (book.cover_i) {
+                        coverUrl = 'https://covers.openlibrary.org/b/id/' +
+                            book.cover_i + '-M.jpg';
+                    }
+
+                    const bookCard = document.createElement('div');
+                    bookCard.className = 'book-card';
+
+                    const cover = document.createElement('img');
+                    cover.className = 'book-cover';
+                    cover.src = coverUrl ||
+                        'https://placehold.co/180x250/261C38/B99AEF?text=No+Cover';
+                    cover.alt = 'Book cover of ' + title;
+
+                    const titleElement = document.createElement('h3');
+                    titleElement.textContent = title;
+
+                    const authorElement = document.createElement('p');
+                    authorElement.textContent = 'Author: ' + author;
+
+                    const yearElement = document.createElement('p');
+                    yearElement.textContent = 'Published: ' + year;
+
+                    const addButton = document.createElement('button');
+                    addButton.className = 'primary-button';
+                    addButton.textContent = 'Add to Reading List';
+
+                    addButton.addEventListener('click', function() {
+                        addBook(title, author, year, coverUrl);
+                    });
+
+                    bookCard.appendChild(cover);
+                    bookCard.appendChild(titleElement);
+                    bookCard.appendChild(authorElement);
+                    bookCard.appendChild(yearElement);
+                    bookCard.appendChild(addButton);
+
+                    searchResults.appendChild(bookCard);
+                }
+
+            } catch (error) {
+                message.textContent = 'Unable to search books. Please check your internet connection.';
+            }
+        }
+
+        function addBook(title, author, year, coverUrl) {
+            let books = window.bookStorage.getBooks();
+
+            let alreadyAdded = false;
+
+            for (let i = 0; i < books.length; i++) {
+                if (books[i].title.toLowerCase() === title.toLowerCase()) {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
+
+            if (alreadyAdded) {
+                document.getElementById('message').textContent =
+                    'This book is already in your reading list.';
+                return;
+            }
+
+            const book = {
+                title: title,
+                author: author,
+                status: 'Want to Read',
+                year: year,
+                coverUrl: coverUrl
+            };
+
+            books.push(book);
+
+            window.bookStorage.saveBooks(books);
+
+            document.getElementById('message').textContent =
+                'Book added successfully to your reading list!';
+        }
+        
+const recommendations = {
+    Fantasy: [
+        "Harry Potter and the Philosopher's Stone",
+        "The Hobbit",
+        "The Chronicles of Narnia"
+    ],
+    Romance: [
+        "Pride and Prejudice",
+        "The Fault in Our Stars",
+        "Me Before You"
+    ],
+    Mystery: [
+        "The Silent Patient",
+        "Gone Girl",
+        "Murder on the Orient Express"
+    ],
+    Horror: [
+        "Dracula",
+        "Frankenstein",
+        "The Shining"
+    ],
+    Science: [
+        "A Brief History of Time",
+        "The Selfish Gene",
+        "Cosmos"
+    ]
+};
+
+document.getElementById('recommendButton').addEventListener('click', async function() {
+    const genre = document.getElementById('genre').value;
+    const results = document.getElementById('recommendationResults');
+    const message = document.getElementById('recommendationMessage');
+
+    results.innerHTML = '';
+
+    if (genre === '') {
+        message.textContent = 'Please select a genre first.';
+        return;
+    }
+
+    message.textContent = 'Finding books for ' + genre + '...';
+
+    const generatedRecommendations = [];
+
+    for (let i = 0; i < recommendations[genre].length; i++) {
+        const bookTitle = recommendations[genre][i];
+
+        try {
+            const response = await fetch(
+                'https://openlibrary.org/search.json?title=' +
+                encodeURIComponent(bookTitle) + '&limit=1'
+            );
+
+            const data = await response.json();
+
+            if (data.docs.length > 0) {
+                const book = data.docs[0];
+
+                generatedRecommendations.push({
+                    genre: genre,
+                    title: book.title,
+                    author: book.author_name ? book.author_name[0] : 'Unknown Author',
+                    year: book.first_publish_year || '',
+                    coverUrl: book.cover_i
+                        ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg'
+                        : ''
+                });
+
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+
+                const cover = document.createElement('img');
+
+                cover.src = book.cover_i
+                    ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg'
+                    : 'https://placehold.co/120x180/261C38/B99AEF?text=No+Cover';
+
+                cover.alt = 'Book cover of ' + book.title;
+
+                cover.onerror = function() {
+                    this.src = 'https://placehold.co/120x180/261C38/B99AEF?text=No+Cover';
+                };
+
+                const info = document.createElement('div');
+
+                const title = document.createElement('h3');
+                title.textContent = book.title;
+
+                const author = document.createElement('p');
+                author.textContent = 'Author: ' +
+                    (book.author_name ? book.author_name[0] : 'Unknown Author');
+
+                const year = document.createElement('p');
+                year.textContent = 'Published: ' +
+                    (book.first_publish_year || 'Unknown');
+
+                const addButton = document.createElement('button');
+                addButton.className = 'primary-button';
+                addButton.textContent = 'Add to Reading List';
+
+                addButton.onclick = function() {
+                    let savedBooks = window.bookStorage.getBooks();
+
+                    const bookExists = savedBooks.some(function(savedBook) {
+                        return savedBook.title.toLowerCase() === book.title.toLowerCase();
+                    });
+
+                    if (bookExists) {
+                        message.textContent = 'This book is already in your Reading List!';
+                        return;
+                    }
+
+                    const newBook = {
+                        title: book.title,
+                        author: book.author_name ? book.author_name[0] : 'Unknown Author',
+                        status: 'Want to Read',
+                        year: book.first_publish_year || '',
+                        coverUrl: book.cover_i
+                            ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg'
+                            : ''
+                    };
+
+                    savedBooks.push(newBook);
+                    window.bookStorage.saveBooks(savedBooks);
+
+                    message.textContent = 'Book added to your Reading List!';
+                    addButton.textContent = 'Added!';
+                    addButton.disabled = true;
+                };
+
+                info.appendChild(title);
+                info.appendChild(author);
+                info.appendChild(year);
+                info.appendChild(addButton);
+
+                item.appendChild(cover);
+                item.appendChild(info);
+
+                results.appendChild(item);
+            }
+
+        } catch (error) {
+            message.textContent = 'Unable to load recommendations. Please try again.';
+        }
+    }
+
+    if (generatedRecommendations.length > 0) {
+        window.bookStorage.saveRecommendations(generatedRecommendations);
+    }
+
+    if (results.children.length > 0) {
+        message.textContent = 'Recommended books for ' + genre + ':';
+    } else {
+        message.textContent = 'No recommendations found. Please try again.';
+    }
+});
+
+    </script>
+
+</body>
+</html>
